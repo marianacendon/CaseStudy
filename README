@@ -1,0 +1,55 @@
+##########################################################
+# Mariana Llamas-Cendon
+# MSDS 6303 - 405
+# Homework 4
+# README
+# 25 Oct 2016
+##########################################################
+
+This project consists in cleaning and analyzing data from two different data sets obtained from the World Bank Group website: 
+a) Gross Domestic Product (GDP) for 190 countries: https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv
+b) Education Statistics of 234 countries: https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv
+
+In order to analyze these data properly it was necessary to explore each set independently to determine the "cleaning" that was needed before merging both data sets.
+
+In order to gather the data from both sets to explore them, two different data frames were initialized using RStudio: 
+1. GdpData, containing GDP data set.
+2. EducData containing Education Stats set. 
+
+In the case of the GdpData data frame (the corresponding code for the changed described below can be found in folder Data/gatherGDP.R), it was imperative to name those columns that will be used for the analysis (as none of the columns had descriptive names):
+
+a) First column, containing the codes of countries, was changed from X to CountryCode, matching that of the EducData frame. 
+b) Second column, containing the GDP Rankings, was renamed from X.2 to GDP.Ranking
+
+GdpData data frame also contained 326 observations and 10 variables (most of them named X... X.9), while EducData contained 234 observations and 31 variables. 
+
+From the 31  variables of EducData data frame only CountryCode, Long.name and Income.Group were used for this analysis. This changes can be found in folder Data/gatherEduc.R)
+
+It was decided to merge both sets (corresponding code is found in folder Data/Merge.R) by their matching column: CountryCode, and by considering only those aspects of GdpData that matched EducData therefore using the option all.y=TRUE, while also employing stringAsFactors=FALSE to coerce Factors into other value types pertaining to the original raw data sets. Therefore, initializing a new cleaner data frame called geData containing 234 observations and 40 variables.
+
+The next step regarding the exploration and tidying of the new data frame geData consisted in exploring if missing values were present in either of the columns of interest (except Long.name): CountryCode, GDP.Ranking and Income.Group, determining how many missing values existed on each colum and then establishing the best way to eliminate them.
+
+In this case, it was only the column GDP.Ranking that had 10 missing values present. So the best route of action was to eliminate them.
+
+Another important step for tidying geData was to coerce variable GDP.Ranking from character into numeric value. 
+
+Once the frame geData was tidy enough and ready for analysis, a new frame named ge.sorted (corresponding code is found in folder Analysis/Analysis.R) was initialized with the intention of sorting the data frame by CountryCode in descending order so the United States will be positioned last.
+
+Also, variable Income.Group was coerced back from character to factor, since it possesses six levels. 
+
+Next, all other variables that were not going to be used in the analysis were eliminated: from column 3 to 10 and 13 to 40, leaving: CountryCode, GDP.Ranking, Long.name and Income.Group to work with. 
+
+From Income.Group, besides the classification by income level (Upper, lower middle or low income) there is a subclassification of countries that belong to OECD (35) and those who do not. In order to compare one from the other, their means were calculated. 
+
+A plot, employing data fron Income.Group and GDP.Ranking was created to display visually the correlation between both variables. Each dot on the plot represents a particular country and their position within a specific income group, and their GDP ranking. 
+
+Finally a table displaying the same information as above divided in quantiles put everything in perspective, allowing to determine the number of countries located in a particular income group and GDP ranking. 
+
+
+
+
+
+
+
+
+

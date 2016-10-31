@@ -1,0 +1,225 @@
+---
+title: "CaseStudyConclusion"
+author: "Mariana Llamas-Cendon"
+date: "10/26/2016"
+output: 
+  html_document:
+    keep_md: TRUE
+---
+
+
+
+```{r include=FALSE}
+
+setwd("~/Desktop/git_repositories/CaseStudy")
+```
+##### Introduction:
+###### This Case Study is focused on cleaning data from two raw data sets, one containing the World Bank Group rankings for the Gross Domestic Product of 190 countries and another (also from World Bank Group) related to Education Statistics (from which, the classification from income group will be considered for analysis).
+```{r include=FALSE}
+
+source("Data/gatherGDP.R")
+
+GdpData <- read.csv("gdpdata.csv", sep=",", skip=4, stringsAsFactors=FALSE, header=TRUE)
+
+## Check dimensions of data set
+
+dim(GdpData)
+
+## Explore first rows of data
+
+head(GdpData)
+
+## Check names of columns
+
+names(GdpData)
+
+## Check types of columns to verify that there are not any factors.
+
+str(GdpData)
+
+## Columns related to Country Codes and GDP Rankings have generic X names
+## To change the column names of those columns that will be used for analysis
+## use colnames command
+
+colnames(GdpData)[1]<- "CountryCode"
+colnames(GdpData)[2]<- "GDP.Ranking"
+
+## Verify that names of the columns have been changed to: CountryCode and GDP.Ranking
+
+names(GdpData)
+
+## Check number of rows of data set
+
+nrow(GdpData)
+
+
+```
+
+```{r include=FALSE}
+
+source("Data/gatherEduc.R")
+
+EducData <-read.csv("educationstats.csv", sep=",", stringsAsFactors=FALSE, header=TRUE)
+
+## Check dimensions of data set
+
+dim(EducData)
+
+## Explore first rows of data
+
+head(EducData)
+
+## Check names of columns
+
+names(EducData)
+
+## Check types of columns to verify that there are not any factors.
+
+str(EducData)
+
+## Check number of rows of data set
+
+nrow(EducData)
+
+```
+
+#### How many IDs match from the merged data frame?
+```{r data_merge}
+
+geData <- merge(GdpData, EducData, by = "CountryCode", all =FALSE) 
+```
+
+```{r include=FALSE}
+
+## Check for any NAs on GDP.Ranking variable
+
+is.na(geData$GDP.Ranking)
+
+## Check to see if blank values are present and how many in GDP.Ranking 
+
+geData$GDP.Ranking
+
+## To eliminate those blanks that are not NAs: 
+
+geData <- geData[geData$GDP.Ranking >= 1,]
+
+## Check to see if there are any NAs or blanks in CountryCode
+
+sum(is.na(geData$CountryCode))
+
+geData$CountryCode
+
+
+```
+
+```{r}
+
+###### Check rows of geData after blanks from GDP.Ranking were eliminated 
+
+nrow(geData)
+```
+
+```{r include=FALSE}
+
+## Variable GDP.Ranking is character type, coercing it into numerical is
+## important to manipulate it
+
+geData$GDP.Ranking <- as.numeric(as.character(geData$GDP.Ranking))
+```
+
+```{r include=FALSE}
+
+library(plyr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(Hmisc)
+```
+
+
+#### Sort the data frame in ascending order by GDP (so United States is last). What is the 13th country in the resulting data frame?
+```{r analysis_sort}
+
+## Create data frame ge.sorted to sort variable Gdp.Ranking in descending 
+## order so USA is last.
+
+ge.sorted <- geData[order(-geData$GDP.Ranking),] 
+
+ge.sorted[1:189,1:2]
+
+## To find the country located in the 13th place after the sorting,
+## use column 4, the one that contains countries full names.
+
+ge.sorted[13,11]
+
+## Coerce Income.Group from numeric to factor
+
+ge.sorted$Income.Group <- as.factor(ge.sorted$Income.Group)
+
+## Eliminate unused columns
+
+ge.cleaned <- ge.sorted[,-c(3:10, 13:40)]
+
+```
+
+#### What are the average GDP rankings for the "High income: OECD" and "High income: nonOECD" groups?
+```{r analysis_mean}
+
+## Calculate the mean of GDP.Rankings for Income.group: 
+## High income: OECD" and "High income: nonOECD"
+
+mean(ge.sorted$GDP.Ranking[ge.sorted$Income.Group=="High income: OECD" ])
+
+mean(ge.sorted$GDP.Ranking[ge.sorted$Income.Group=="High income: nonOECD"])
+
+```
+
+#### Plot the GDP for all of the countries
+```{r analysis_plot}
+
+## Plot the GDP.Ranking for all of the countries by Income.Group
+
+qplot(ge.sorted$GDP.Ranking, ge.sorted$Income.Group, main = "GDP Ranking vs. Income Group", xlab = "GDP Ranking", ylab = "Income Group", color = "red")
+```
+
+
+
+
+
+##### From the plot it is evident that (from top to bottom):
+###### Upper middle income has a high concentration of countries and a larger spread in relation to the GDP Ranking, from about 10 to almost 200.
+###### Lower middle income has an even higher concentration of countries, and an even wider spread than that of the Upper middle income in relation to the GDP Ranking that extends from 0 to almost 200.
+###### Low income is negatively skewed, spreading from about 60 to a little over 150. Nevertheless, the greater concentration is located between 125 to 175 but the concentration of countries is evidently lesser than the two previous ones.
+###### High income: OECD, on the other hand, is positively skewed with the greater conentration between 0 to 25, and what could be considered an extreme outlier at approximately 125. 
+###### High income: nonOECD shows what appears to be a leser number of countries spread from less than 25 to about 163. 
+###### In summary, Upper and Lower middle incomes have a higher contration of countries and a wider spread across GDP Ranking.
+###### Low income countries position themselves on the higher rankings of the GDP. 
+###### Those from High income: OECD display a smaller concentration of countries and a narrower spread on the smaller rankings of GDP. 
+###### High income: nonOECD, also shows a smaller concentration of countries, but it has a wider spread compared to that of the High income: OECD.
+
+
+#### How many countries are Lower middle income but among the 38 nations with highest GDP?
+```{r analysis_cut}
+
+## Cut GDP.Ranking into 5 separate quantile groups. 
+
+ge.sorted$Rank.Countries <- cut2(ge.sorted$GDP.Ranking, g=5)
+
+# Make a table versus Income.Group.
+
+table(ge.sorted$Rank.Countries, ge.sorted$Income.Group)
+```
+
+###### 16 countries with Lower middle income are among the 38 with the highest GDP Rankings. One can assume that even though they are located on the Lower middle income the economy of their countries is not the healthiest.
+
+##### Conclusion: 
+###### It would be a general idea to think that the countries with the highest GDP rankings should be those with the lower incomes, and even though there is a higher concentration of countries with low income and high GDP ranking, there are others whether with upper middle income or lower middle income that also have a higher GDP ranking, which maybe due to the overall level of health of their economies. Although, those countries with high income that are members of the OECD have a lower GDP ranking than those who do not belong to the organization. Without further research, it would be speculative to assert that those countries members of the OECD have healthier economies that those who do not belong and there could be other influencing factors not considered in this analysis. 
+
+
+
+
+
+
+
+
+
