@@ -16,7 +16,7 @@ setwd("/Users/marianallamas-cendon/Desktop/git_repositories/CaseStudy/Data")
 ## Use command read.csv data, using option stringsAsFactors = FALSE to coerce factors
 ## to other types such as characters, numeric, integer.
 
-EducData <-read.csv("educationstats.csv", sep=",", stringsAsFactors=FALSE, header=TRUE)
+EducData <-read.csv("educationstats.csv", sep=",", stringsAsFactors= FALSE, header=TRUE)
 
 ## Check dimensions of data set
 
@@ -37,4 +37,5 @@ str(EducData)
 ## Check number of rows of data set
 
 nrow(EducData)
+
 

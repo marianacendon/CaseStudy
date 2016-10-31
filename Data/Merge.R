@@ -33,6 +33,8 @@ names(geData)
 
 str(geData)
 
+
+
 ## Check for any NAs on GDP.Ranking variable
 
 is.na(geData$GDP.Ranking)
@@ -44,6 +46,11 @@ geData$GDP.Ranking
 ## To eliminate those blanks that are not NAs: 
 
 geData <- geData[geData$GDP.Ranking >= 1,]
+
+geData$GDP.Ranking
+
+geData <- geData[geData$Income.Group >= 1,]
+
 
 ## Check to see if there are any NAs or blanks in CountryCode
 
